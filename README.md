@@ -7,15 +7,15 @@
 
 package org.usfirst.frc.team72.robot;
 
-import edu.wpi.first.wpilibj.AnalogGyro;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -33,11 +33,13 @@ public class Robot extends IterativeRobot {
 	Victor rightrear = new Victor(1);
 	Victor leftfront = new Victor(2);
 	Victor leftrear = new Victor(3);
+	Victor intake = new Victor(4);
+	Victor outtake = new Victor(5);
 	SpeedControllerGroup leftside = new SpeedControllerGroup(leftfront, leftrear);
 	SpeedControllerGroup rightside = new SpeedControllerGroup(rightfront, rightrear);
 	DifferentialDrive drivetrain = new DifferentialDrive(leftside, rightside);
-	Gyro gyro = new AnalogGyro(1);
-	double Kp = 0.03;
+	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+	int gangle;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -64,33 +66,35 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		time = timer.get();
-		if (time < 1.0) {
-			float angle = (float) gyro.getAngle(); // get heading
-			drivetrain.tankDrive(-1.0, -angle * Kp); // turn to correct heading
-		} 
-		
-		else {
-			drivetrain.arcadeDrive(0.0, 0.0); // stop robot
-			timer.reset();
-			timer.start();
+		gangle = (int) gyro.getAngle();
+		if(gangle > 0 && gangle < 180) {
+			drivetrain.tankDrive(0.5, -0.5);
+		}
+		if(gangle < 360 && gangle > 180) {
+			drivetrain.tankDrive(0.5, -0.5);
 		}
 		
-		/*if(autonmode == 1) {
-			if (time < 2.0) {
-				drivetrain.arcadeDrive(0.5, 0.0); // drive forwards half speed
+		
+		// move
+		if(autonmode == 1) {
+			if (time < 0.2) {
+				drivetrain.tankDrive(-0.5, 0.0); // drive forwards half speed
+				intake.set(1.0);
 			} 
 			
 			else {
-				drivetrain.arcadeDrive(0.0, 0.0); // stop robot
+				drivetrain.tankDrive(0.0, 0.0); // stop robot
+				intake.set(0.0);
 				timer.reset();
 				timer.start();
 				autonmode++;
 			}	
-		}*/
-		
+		}
+		/*
+		// turn
 		if(autonmode == 2) {
-			if (time < 2.0) {
-				drivetrain.arcadeDrive(0.5, 0.0); // drive forwards half speed
+			if (time < 0.8) {
+				drivetrain.tankDrive(-0.5, 0.5); 
 			} 
 			
 			else {
@@ -100,10 +104,10 @@ public class Robot extends IterativeRobot {
 				autonmode++;
 			}	
 		}
-		
+		// move forward
 		if(autonmode == 3) {
-			if (time < 2.0) {
-				drivetrain.arcadeDrive(0.5, 0.0); // drive forwards half speed
+			if (time < 0.5) {
+				drivetrain.arcadeDrive(-0.5, 0.0); // drive forwards half speed
 			} 
 			
 			else {
@@ -113,20 +117,21 @@ public class Robot extends IterativeRobot {
 				autonmode++;
 			}	
 		}
-		
+		// shoot balls
 		if(autonmode == 4) {
 			if (time < 2.0) {
-				drivetrain.arcadeDrive(0.5, 0.0); // drive forwards half speed
+				outtake.set(1.0);
 			} 
 			
 			else {
 				drivetrain.arcadeDrive(0.0, 0.0); // stop robot
+				outtake.set(0.0);
 				timer.reset();
 				timer.start();
 				autonmode++;
 				
 			}	
-		}
+		}*/
 	}
 
 	/**
